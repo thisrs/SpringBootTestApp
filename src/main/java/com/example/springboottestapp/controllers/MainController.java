@@ -1,8 +1,10 @@
 package com.example.springboottestapp.controllers;
 
 import com.example.springboottestapp.domain.Message;
+import com.example.springboottestapp.domain.User;
 import com.example.springboottestapp.repos.MessageRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -10,13 +12,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Map;
 
 @org.springframework.stereotype.Controller
-public class Controller {
+public class MainController {
+
+    private final MessageRepo messageRepo;
 
     @Autowired
-    private MessageRepo messageRepo;
+    public MainController(MessageRepo messageRepo) {
+        this.messageRepo = messageRepo;
+    }
 
     @GetMapping("/")
-    public String greeting(@RequestParam  Map<String, Object> model) {
+    public String greeting(@RequestParam Map<String, Object> model) {
         return "greeting";
     }
 
@@ -28,8 +34,11 @@ public class Controller {
     }
 
     @PostMapping("/main")
-    public String add(@RequestParam String text, @RequestParam String tag, Map<String, Object> model) {
-        Message message = new Message(text,tag);
+    public String add(@AuthenticationPrincipal User user,
+                      @RequestParam String text,
+                      @RequestParam String tag, Map<String,
+            Object> model) {
+        Message message = new Message(text, tag, user);
         messageRepo.save(message);
 
         Iterable<Message> messages = messageRepo.findAll();
